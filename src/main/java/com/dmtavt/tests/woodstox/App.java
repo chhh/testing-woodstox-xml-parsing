@@ -3,12 +3,80 @@
  */
 package com.dmtavt.tests.woodstox;
 
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class App {
-    public String getGreeting() {
-        return "Hello world.";
+    public static void main(String[] args) throws IOException, XMLStreamException {
+        System.out.println("Program started");
+
+        if (args.length != 0) {
+            System.out.println("To run in interactive mode run without parameters");
+            System.out.println("Trying to parse file: " + args[0]);
+            parse(Paths.get(args[0]));
+        } else {
+            Scanner in = new Scanner(System.in);
+            System.out.println("Create test xml file?");
+            System.out.println("File will only be created if it does not exist.");
+            System.out.println("The directory must exist however.");
+            System.out.println("Input: <int:number of xml entries to generate> <string:absolute dir path>");
+            System.out.println("If you already have a file, just input its absolute path");
+            String input = in.nextLine();
+            System.out.println("You entered:\n" + input);
+
+            Pattern re1 = Pattern.compile("^(\\d+)\\s+(.+?)$");
+            Pattern re2 = Pattern.compile("^\\s+(.+?)$");
+            Matcher m1 = re1.matcher(input);
+            if (m1.matches()) {
+                int count = Integer.parseInt(m1.group(1));
+                Path dir = Paths.get(m1.group(2));
+                if (!Files.exists(dir))
+                    throw new IllegalArgumentException("The direcotry must exist");
+                Path file = getFn(dir, count);
+                FakeData.createHugeXml(file, count);
+                System.out.printf("Created file (%s) at: %s", fileSizeHumanReadable(Files.size(file)), file.toString());
+            } else {
+                Matcher m2 = re2.matcher(input);
+                if (m2.matches()) {
+                    Path path = Paths.get(m2.group(1));
+                    parse(path);
+                }
+            }
+        }
+
+        System.out.println("Program finished");
     }
 
-    public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+    static void parse(Path path) throws IOException, XMLStreamException {
+        long timeLo = System.nanoTime();
+        List<WoodstoxParser.Person> people = WoodstoxParser.parse(path);
+        long timeHi = System.nanoTime();
+
+        long totalSalary = people.stream().mapToLong(p -> p.salaryAmount).sum();
+        double seconds = (timeHi - timeLo) / 1e9f;
+        long fileSize = Files.size(path);
+        String fs = fileSizeHumanReadable(fileSize);
+        System.out.printf("Parsed %d persons (%s) in %.2f seconds, total salary %.0E\n", people.size(), fs, seconds, (double) totalSalary);
+    }
+
+    static Path getFn(Path dir, int numEntries) {
+        return dir.resolve("xml-" + numEntries + ".xml");
+    }
+
+    public static String fileSizeHumanReadable(long size) {
+        final int radix = 1024;
+        int exp =(int) (Math.log(size) / Math.log(radix));
+        if (exp == 0)
+            return Long.toString(size) + " B";
+        final String suffix = "kMGTPEZY";
+        exp = Math.min(exp, suffix.length());
+        return String.format("%.2f %sB", size/Math.pow(radix, exp), suffix.charAt(exp-1));
     }
 }
