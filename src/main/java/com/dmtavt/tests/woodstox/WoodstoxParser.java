@@ -1,5 +1,6 @@
 package com.dmtavt.tests.woodstox;
 
+import com.dmtavt.tests.Person;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
 
@@ -24,7 +25,7 @@ public class WoodstoxParser {
         void tagContents(String tagName, StringBuilder sb);
     }
 
-    public static List<Person> parse(Path path) throws IOException, XMLStreamException {
+    public static List<? extends Person> parse(Path path) throws IOException, XMLStreamException {
         XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newFactory();
         f.configureForSpeed();
 //        f.configureForLowMemUsage();
@@ -35,7 +36,7 @@ public class WoodstoxParser {
             // fast forward to beginning 'persons' tag (will throw if we don't find the tag at all)
             processUntilTrue(sr, sr1 -> isTagStart(sr1, "persons"));
 
-            final List<Person> persons = new ArrayList<>(); // we've found the tag, so we can allocate storage for data
+            final List<WoodstoxPerson> persons = new ArrayList<>(); // we've found the tag, so we can allocate storage for data
             final StringBuilder sb = new StringBuilder(); // reuse a single string builder for all character aggregation
 
             // now keep processing unless we reach closing 'persons' tag
@@ -46,7 +47,7 @@ public class WoodstoxParser {
                 if (isTagStart(sr1, "person")) {
                     // now we're finally reached a 'person', can start processing it
                     int idIndex = sr1.getAttributeInfo().findAttributeIndex("", "id");
-                    Person p = new Person(Integer.parseInt(sr1.getAttributeValue(idIndex)));
+                    WoodstoxPerson p = new WoodstoxPerson(Integer.parseInt(sr1.getAttributeValue(idIndex)));
 
                     sr1.next();
                     processUntilTrue(sr1, sr2 -> {
@@ -118,27 +119,10 @@ public class WoodstoxParser {
     }
 
 
-    public static class Person implements TagPairCallback {
-        final int id;
-        String first;
-        String last;
-        String middle;
-        int dobYear;
-        int dobMonth;
-        String gender;
-        String salaryCurrency;
-        int salaryAmount;
-        String street;
-        String city;
+    public static class WoodstoxPerson extends Person implements TagPairCallback {
 
-        public Person(int id) {
-            this.id = id;
-        }
-
-        boolean isComplete() {
-            return id != 0 && dobYear > 0 && dobMonth > 0 && salaryAmount > 0
-                    && first != null && last != null && middle != null
-                    && gender != null && salaryCurrency != null && city != null && street != null;
+        public WoodstoxPerson(int id) {
+            super(id);
         }
 
         @Override

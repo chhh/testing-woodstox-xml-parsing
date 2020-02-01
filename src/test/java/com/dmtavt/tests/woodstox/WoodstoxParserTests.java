@@ -3,34 +3,22 @@
  */
 package com.dmtavt.tests.woodstox;
 
+import com.dmtavt.tests.BaseParserTests;
+import com.dmtavt.tests.Person;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
-import static com.dmtavt.tests.woodstox.App.fileSizeHumanReadable;
+import static com.dmtavt.tests.App.fileSizeHumanReadable;
 
-class WoodstoxParserTests {
-    static final int numEntries = 4000000;
-    static final Path dir = Paths.get("C:\\tmp\\xml");
-
-    static Path getFilePath() {
-        return dir.resolve("xml-" + numEntries + ".xml");
-    }
-
-    @Test void TestFileGeneration() throws IOException {
-        FakeData.createHugeXml(getFilePath(), numEntries);
-        long fileSize = Files.size(getFilePath());
-        System.out.printf("Created file (%s) at: %s", fileSizeHumanReadable(fileSize), getFilePath());
-    }
+class WoodstoxParserTests extends BaseParserTests {
 
     @Test void TestFileRead() throws IOException, XMLStreamException {
         long timeLo = System.nanoTime();
-        List<WoodstoxParser.Person> people = WoodstoxParser.parse(getFilePath());
+        List<? extends Person> people = WoodstoxParser.parse(getFilePath());
         long timeHi = System.nanoTime();
 
         long totalSalary = people.stream().mapToLong(p -> p.salaryAmount).sum();

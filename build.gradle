@@ -28,6 +28,7 @@ java {
 
 dependencies {
     implementation 'com.fasterxml.woodstox:woodstox-core:6.0.3'
+    implementation 'com.github.chhh:javolution-core-java-msftbx:6.11.8'
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.1'
@@ -38,7 +39,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = 'com.dmtavt.tests.woodstox.App'
+    mainClassName = 'com.dmtavt.tests.App'
 }
 
 test {

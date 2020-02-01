@@ -1,4 +1,4 @@
-package com.dmtavt.tests.woodstox;
+package com.dmtavt.tests;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
