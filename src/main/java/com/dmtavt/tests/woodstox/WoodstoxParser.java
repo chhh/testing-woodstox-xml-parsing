@@ -64,6 +64,8 @@ public class WoodstoxParser {
                     // we've reached the end of a 'person'
                     if (p.isComplete()) {
                         persons.add(p);
+                    } else {
+                        throw new IllegalStateException("Whoa, a person had incomplete data");
                     }
                 }
 
@@ -78,9 +80,6 @@ public class WoodstoxParser {
 
     }
 
-    /**
-     * Assumes we're at the start of a tag, e.g. skip whitespaces etc.
-     **/
     public static void processTagPair(XMLStreamReader2 sr, StringBuilder sb, TagPairCallback callback) throws XMLStreamException {
         final String tagName = sr.getLocalName();
         callback.tagStart(tagName, sr); // let the caller do whatever they need with the tag name and attributes
